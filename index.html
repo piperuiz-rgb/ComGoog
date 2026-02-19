@@ -1,0 +1,46 @@
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" id="buscadorGeneral" class="form-control" 
+                       placeholder="Buscar por JOOR PO o ID del ERP...">
+            </div>
+        </div>
+        <div class="col-md-6 text-end">
+            <button class="btn btn-outline-success" onclick="filtrarComisiones('listas')">
+                Comisiones Listas para Cobrar
+            </button>
+            <button class="btn btn-outline-warning" onclick="filtrarRetrasos()">
+                Ver Retrasos (Window)
+            </button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle border">
+            <thead class="table-light">
+                <tr>
+                    <th>Ref. Interna (ERP)</th>
+                    <th>Ref. Cliente (JOOR PO)</th>
+                    <th>Cliente</th>
+                    <th>Estado Logístico</th>
+                    <th>Delivery Window</th>
+                    <th>Comisión</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tablaPedidos">
+                <tr>
+                    <td><strong>ERP-9921</strong></td>
+                    <td>PO-JOOR-2024</td>
+                    <td>Boutique Paris</td>
+                    <td><span class="badge bg-info">Enviado (UPS)</span></td>
+                    <td>15/02 - 28/02</td>
+                    <td><span class="badge bg-success">COBRADA</span></td>
+                    <td><button class="btn btn-sm btn-primary">Ver PDF</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
