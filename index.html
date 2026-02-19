@@ -1,46 +1,170 @@
-<div class="container-fluid mt-4">
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                <input type="text" id="buscadorGeneral" class="form-control" 
-                       placeholder="Buscar por JOOR PO o ID del ERP...">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Comisiones de Showrooms | Charo Ruiz Ibiza</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .badge-success { background-color: #28a745; color: white; padding: 4px 8px; border-radius: 4px; }
+        .badge-warning { background-color: #ffc107; color: #333; padding: 4px 8px; border-radius: 4px; }
+        .badge-info { background-color: #17a2b8; color: white; padding: 4px 8px; border-radius: 4px; }
+        .text-joor { color: #555; font-size: 0.85em; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div>
+                <div class="logo-text"><span class="logo-accent">◆</span> Charo Ruiz Ibiza</div>
+                <div class="header-subtitle">Sistema de Comisiones de Showrooms (Factoring Hilldun Ready)</div>
             </div>
         </div>
-        <div class="col-md-6 text-end">
-            <button class="btn btn-outline-success" onclick="filtrarComisiones('listas')">
-                Comisiones Listas para Cobrar
-            </button>
-            <button class="btn btn-outline-warning" onclick="filtrarRetrasos()">
-                Ver Retrasos (Window)
-            </button>
+    </header>
+
+    <div class="container">
+        <h1>Gestión de Comisiones</h1>
+        <p class="subtitle">Control avanzado de pedidos (JOOR/ERP), facturas y liquidación de Hilldun</p>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('dashboard')">⚠️ Pendientes</button>
+            <button class="nav-tab" onclick="switchTab('showrooms')">🏢 Showrooms</button>
+            <button class="nav-tab" onclick="switchTab('clientes')">👥 Clientes</button>
+            <button class="nav-tab" onclick="switchTab('pedidos')">📦 Pedidos</button>
+            <button class="nav-tab" onclick="switchTab('facturas')">📄 Facturas</button>
+            <button class="nav-tab" onclick="switchTab('cobros')">💰 Cobros</button>
+            <button class="nav-tab" onclick="switchTab('informes')">📈 Informes</button>
+            <button class="nav-tab" onclick="switchTab('historico')">📜 Histórico Informes</button>
+        </div>
+
+        <div id="tab-dashboard" class="tab-content active">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div class="card-icon">⚠️</div>
+                        <div class="card-title">Facturas Pendientes de Cobro (Hilldun Balance > 0)</div>
+                    </div>
+                </div>
+                <div id="facturasPendientesContainer"></div>
+            </div>
+        </div>
+
+        <div id="tab-pedidos" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div class="card-icon">📦</div>
+                        <div class="card-title">Pedidos</div>
+                    </div>
+                    <div class="actions">
+                        <input type="text" id="busquedaJoor" placeholder="🔍 Buscar por JOOR PO..." onkeyup="filtrarPedidos()" class="form-control-inline">
+                        <button class="btn btn-success" onclick="modalPedido()">Nuevo Pedido</button>
+                        <button class="btn btn-primary" onclick="document.getElementById('importPedidosInput').click()">Importar Excel Hilldun</button>
+                    </div>
+                </div>
+                <input type="file" id="importPedidosInput" accept=".xlsx,.csv" style="display:none">
+                <div class="table-container" id="pedidosTable">
+                    </div>
+            </div>
+        </div>
+
+        <div id="tab-facturas" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div class="card-icon">📄</div>
+                        <div class="card-title">Facturas y Logística</div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-success" onclick="modalFactura()">+ Nueva Factura</button>
+                        <button class="btn btn-primary" onclick="document.getElementById('importFacturasInput').click()">↑ Importar</button>
+                    </div>
+                </div>
+                <input type="file" id="importFacturasInput" accept=".xlsx,.csv" style="display:none">
+                <div class="table-container" id="facturasTable">
+                    </div>
+            </div>
+        </div>
+
+        <div id="tab-showrooms" class="tab-content">...</div>
+        <div id="tab-clientes" class="tab-content">...</div>
+        <div id="tab-cobros" class="tab-content">...</div>
+        <div id="tab-informes" class="tab-content">...</div>
+        <div id="tab-historico" class="tab-content">...</div>
+    </div>
+
+    <div id="modalPedido" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Nuevo Pedido / JOOR Sync</h3>
+                <button class="modal-close" onclick="cerrarModal('modalPedido')">×</button>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Número Pedido ERP *</label>
+                    <input type="text" id="pedNumero" required>
+                </div>
+                <div class="form-group">
+                    <label>JOOR PO Number *</label>
+                    <input type="text" id="pedJoorPO" placeholder="Referencia JOOR" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Cliente *</label>
+                <select id="pedCliente" required></select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Delivery Window Start</label>
+                    <input type="date" id="pedWindowStart">
+                </div>
+                <div class="form-group">
+                    <label>Delivery Window End *</label>
+                    <input type="date" id="pedWindowEnd" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="cerrarModal('modalPedido')">Cancelar</button>
+                <button class="btn btn-primary" onclick="guardarPedido()">Guardar</button>
+            </div>
         </div>
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-hover align-middle border">
-            <thead class="table-light">
-                <tr>
-                    <th>Ref. Interna (ERP)</th>
-                    <th>Ref. Cliente (JOOR PO)</th>
-                    <th>Cliente</th>
-                    <th>Estado Logístico</th>
-                    <th>Delivery Window</th>
-                    <th>Comisión</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="tablaPedidos">
-                <tr>
-                    <td><strong>ERP-9921</strong></td>
-                    <td>PO-JOOR-2024</td>
-                    <td>Boutique Paris</td>
-                    <td><span class="badge bg-info">Enviado (UPS)</span></td>
-                    <td>15/02 - 28/02</td>
-                    <td><span class="badge bg-success">COBRADA</span></td>
-                    <td><button class="btn btn-sm btn-primary">Ver PDF</button></td>
-                </tr>
-            </tbody>
-        </table>
+    <div id="modalFactura" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Nueva Factura (Envío a Hilldun)</h3>
+                <button class="modal-close" onclick="cerrarModal('modalFactura')">×</button>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Número Factura *</label>
+                    <input type="text" id="facNumero" required>
+                </div>
+                <div class="form-group">
+                    <label>Balance Pendiente Hilldun *</label>
+                    <input type="number" id="facBalance" step="0.01" value="0.00">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Carrier (UPS/FedEx)</label>
+                    <input type="text" id="facCarrier">
+                </div>
+                <div class="form-group">
+                    <label>Tracking Number</label>
+                    <input type="text" id="facTracking">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="cerrarModal('modalFactura')">Cancelar</button>
+                <button class="btn btn-primary" onclick="guardarFactura()">Guardar</button>
+            </div>
+        </div>
     </div>
-</div>
+
+    <script src="app.js"></script>
+</body>
+</html>
